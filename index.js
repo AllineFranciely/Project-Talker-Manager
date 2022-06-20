@@ -95,7 +95,7 @@ const validateToken = (req, res, next) => {
   next();
 };
 
-const validadeName = (req, res, next) => {
+const validateName = (req, res, next) => {
   const { name } = req.body;
   if (!name) {
     return res.status(400).json({ message: 'O campo "name" é obrigatório' });
@@ -125,11 +125,12 @@ const validateTalk = (req, res, next) => {
 
 const validateRate = (req, res, next) => {
   const { talk } = req.body;
-  if (!talk.rate) {
-    return res.status(400).json({ message: 'O campo "rate" é obrigatório' });
-  } if (talk.rate < 1 || talk.rate > 5) {
+  if (talk.rate < 1 || talk.rate > 5) {
     return res.status(400).json({ message: 'O campo "rate" deve ser um inteiro de 1 à 5' });
   }
+  if (!talk.rate) {
+    return res.status(400).json({ message: 'O campo "rate" é obrigatório' });
+  } 
   next();
 };
 
@@ -137,13 +138,14 @@ const validateWatchedAt = (req, res, next) => {
   const { talk: { watchedAt } } = req.body;
   if (!watchedAt) {
     return res.status(400).json({ message: 'O campo "watchedAt" é obrigatório' });
-  } if (!dataRegex.test(watchedAt)) {
+  } 
+  if (!dataRegex.test(watchedAt)) {
     return res.status(400).json({ message: 'O campo "watchedAt" deve ter o formato "dd/mm/aaaa"' });
-  }
+  } 
   next();
 };
 
-app.post('/talker', validateToken, validadeName, validateAge, validateTalk,
+app.post('/talker', validateToken, validateName, validateAge, validateTalk,
   validateRate, validateWatchedAt, async (req, res, _next) => {
     const { name, age, talk } = req.body;
     const talkers = await readFile();
@@ -152,6 +154,24 @@ app.post('/talker', validateToken, validadeName, validateAge, validateTalk,
     await writeFile(talkers);
     res.status(201).send({ id, name, age, talk });
   });
+
+// REQUISTO 6:
+app.put('/talker/:id', validateToken, validateName, validateAge, validateTalk,
+validateRate, validateWatchedAt, async (req, res, _next) => {
+  const id = Number(req.params.id);
+  const { name, age, talk } = req.body;
+  const talkers = await readFile();
+  const talkersById = talkers.findIndex((talker) => talker.id === id);
+  const talkEdit = {
+    id,
+    name,
+    age,
+    talk,
+  };
+  talkers[talkersById] = { ...talkEdit };
+  writeFile(talkers);
+  res.status(200).json(talkEdit);
+});
 
 // não remova esse endpoint, e para o avaliador funcionar
 app.get('/', (_request, response) => {
