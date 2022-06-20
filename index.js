@@ -173,6 +173,15 @@ validateRate, validateWatchedAt, async (req, res, _next) => {
   res.status(200).json(talkEdit);
 });
 
+// REQUISITO 7:
+  app.delete('/talker/:id', validateToken, async (req, res) => {
+    const id = Number(req.params.id);
+    const talkers = await readFile();
+    const filterTalkers = talkers.filter((talker) => talker.id !== id);
+    writeFile(filterTalkers);
+    res.status(204).end();
+  });
+
 // não remova esse endpoint, e para o avaliador funcionar
 app.get('/', (_request, response) => {
   response.status(HTTP_OK_STATUS).send();
