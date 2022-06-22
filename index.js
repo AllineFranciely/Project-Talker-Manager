@@ -10,7 +10,6 @@ const PORT = '3000';
 const emailRegex = /(.+)@(.+){2,}\.(.+){2,}/;
 const dataRegex = /^[0-9]{2}\/[0-9]{2}\/[0-9]{4}$/;
 const fileTalkers = './talker.json';
-const read = require('body-parser/lib/read');
 
 const { readFile, writeFile } = require('./functins-fs');
 
