@@ -12,6 +12,7 @@ const dataRegex = /^[0-9]{2}\/[0-9]{2}\/[0-9]{4}$/;
 const fileTalkers = './talker.json';
 
 const { readFile, writeFile } = require('./functins-fs');
+const read = require('body-parser/lib/read');
 
 // REQUISITO 1:
 app.get('/talker', async (_req, res, _next) => {
@@ -22,6 +23,28 @@ app.get('/talker', async (_req, res, _next) => {
   } res.status(HTTP_OK_STATUS).json(talkers);
 });
 
+const validateToken = (req, res, next) => {
+  const authToken = req.headers.authorization;
+  if (!authToken) {
+    return res.status(401).json({ message: 'Token não encontrado' });
+  }
+  if (authToken.length !== 16) {
+    return res.status(401).json({ message: 'Token inválido' });
+  }
+  next();
+};
+
+// REQUISITO 8: 
+app.get('/talker/search', validateToken, async (req, res, _next) => {
+  const { q } = req.query;
+  const talkers = await readFile();
+  if (!q) {
+    return res.status(200).send(talkers);
+  }
+  const tarlkerSearched = talkers.filter((talker) => talker.name.includes(q));
+  res.status(200).send(tarlkerSearched);
+});
+
 // REQUISITO 2:
 app.get('/talker/:id', async (req, res, _next) => {
   const { id } = req.params;
@@ -30,6 +53,7 @@ app.get('/talker/:id', async (req, res, _next) => {
   const chosenTalker = talkers.find((talker) => talker.id === parseInt(id, 10));
   if (!chosenTalker) {
     return res.status(404).json({ message: 'Pessoa palestrante não encontrada' });
+  // next('Erro no talker id;');
   } res.status(HTTP_OK_STATUS).json(chosenTalker);
 });
 
@@ -84,16 +108,6 @@ app.post('/login', (req, res, _next) => {
 });
 
 // REQUISITO 5: 
-const validateToken = (req, res, next) => {
-  const authToken = req.headers.authorization;
-  if (!authToken) {
-    return res.status(401).json({ message: 'Token não encontrado' });
-  }
-  if (authToken.length !== 16) {
-    return res.status(401).json({ message: 'Token inválido' });
-  }
-  next();
-};
 
 const validateName = (req, res, next) => {
   const { name } = req.body;
@@ -186,6 +200,10 @@ validateRate, validateWatchedAt, async (req, res, _next) => {
 app.get('/', (_request, response) => {
   response.status(HTTP_OK_STATUS).send();
 });
+
+// app.use((erro, req, res, _next) => {
+//   res.status(400).send(erro);
+// });
 
 app.listen(PORT, () => {
   console.log('Online');
