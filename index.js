@@ -22,6 +22,7 @@ app.get('/talker', async (_req, res, _next) => {
   } res.status(HTTP_OK_STATUS).json(talkers);
 });
 
+// REQUISITO 5:
 const validateToken = (req, res, next) => {
   const authToken = req.headers.authorization;
   if (!authToken) {
